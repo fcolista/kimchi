@@ -32,7 +32,7 @@ from wok.exception import InvalidParameter, OperationFailed
 from wok.plugins.kimchi import config
 from wok.plugins.kimchi.osinfo import get_template_default
 from wok.stringutils import encode_value
-from wok.utils import run_command, wok_log
+from wok.utils import run_command, wok_log, is_openrc
 from wok.xmlutils.utils import xpath_get_text
 
 MAX_REDIRECTION_ALLOWED = 5
@@ -265,10 +265,14 @@ def is_libvirtd_up():
     """
     Checks if libvirtd.service is up.
     """
-    cmd = ['systemctl', 'is-active', 'libvirtd.service']
-    output, error, rc = run_command(cmd, silent=True)
-    return True if output == 'active\n' else False
-
+	if is_openrc:
+		cmd = ['rc-service', 'libvirtd', 'status']
+		output, error, rc = run_command(cmd, silent=True)
+		return True if "started" in output else False
+	else
+		cmd = ['systemctl', 'is-active', 'libvirtd.service']
+		output, error, rc = run_command(cmd, silent=True)
+		return True if output == 'active\n' else False
 
 def is_s390x():
     """
